@@ -670,18 +670,18 @@ const tracks = [
   { title:"Fa9la - Flipperachi", artist:"Akshaye Khanna, DJ Outlaw", part:"Part 1", youtubeId:"Q_mWs5nnqb0", len:"1:47" },
   
 
-  /* Dhurandhar 2 (Spotify) */
-  { title:"Aari Aari", artist:"Bombay Rockers, Jasmine Sandlas, Reble", part:"Part 2", youtubeId:"veKqG8PT5Zw", len:"4:15" },
-  { title:"Jaiye Sajana", artist:"Jasmine Sandlas, Satinder Sartaaj", part:"Part 2", youtubeId:"OHu5uE04F7k", len:"3:00" },
-  { title:"Vaari Jaavan", artist:"Jyoti Nooran, Jasmine Sandlas, Reble", part:"Part 2", youtubeId:"UizVgDXo2Xc", len:"4:10" },
-  { title:"Hum Pyaar Karne Wale", artist:"Anuradha Paudwal, Udit Narayan, Qveen Herby", part:"Part 2", youtubeId:"C2UQNjfw4mQ", len:"3:28" },
-  { title:"Jaan Se Guzarte Hain", artist:"Shashwat Sachdev, Khan Saab", part:"Part 2", youtubeId:"mbLYJumdROA", len:"5:32" },
-  { title:"Main Aur Tu", artist:"Jasmine Sandlas, Reble", part:"Part 2", youtubeId:"c-W7L6AbmJU", len:"3:30" },
-  { title:"Tamma Tamma", artist:"Bappi Lahiri,Anuradha Paudwal,Indeevar", part:"Part 2", youtubeId:"XJmzfJGx3N8", len:"3:58" },
-  { title:"Rang De Lal (Oye Oye)", artist:"Jasmine Sandlas, Afsana Khan, Amit Kumar, Reble", part:"Part 2", youtubeId:"cVUBCmBr-4U", len:"3:20" },
-  { title:"Wild Ride", artist:"Ellisar, Shashwat Sachdev", part:"Part 2", youtubeId:"ouRYWCw3-T0", len:"2:52" },
-  { title:"Phir Se", artist:"Shashwat Sachdev, Arijit Singh", part:"Part 2", youtubeId:"EItGxlIh8vI", len:"5:54" },
-  { title:"Destiny – Mann Atkeya", artist:"Shashwat Sachdev, Token, Vaibhav G, Shahzad Ali", part:"Part 2", youtubeId:"SNHbbYbhgbI", len:"3:46" },
+  /* Dhurandhar 2 — YouTube (used on mobile) + Spotify (used on desktop) */
+  { title:"Aari Aari", artist:"Bombay Rockers, Jasmine Sandlas, Reble", part:"Part 2", youtubeId:"veKqG8PT5Zw", spotifyId:"157BtwkY54FQ3Xl8DsTso1", len:"4:15" },
+  { title:"Jaiye Sajana", artist:"Jasmine Sandlas, Satinder Sartaaj", part:"Part 2", youtubeId:"OHu5uE04F7k", spotifyId:"6xwKNAUHeo2DbWNAPi8aEy", len:"3:00" },
+  { title:"Vaari Jaavan", artist:"Jyoti Nooran, Jasmine Sandlas, Reble", part:"Part 2", youtubeId:"UizVgDXo2Xc", spotifyId:"1I7yw0J5KpUaWhdBviGlON", len:"4:10" },
+  { title:"Hum Pyaar Karne Wale", artist:"Anuradha Paudwal, Udit Narayan, Qveen Herby", part:"Part 2", youtubeId:"C2UQNjfw4mQ", spotifyId:"09WTiAB81RmPHae2BPjtaQ", len:"3:28" },
+  { title:"Jaan Se Guzarte Hain", artist:"Shashwat Sachdev, Khan Saab", part:"Part 2", youtubeId:"mbLYJumdROA", spotifyId:"4aWTPC6cuebk9zSpW1PY1Y", len:"5:32" },
+  { title:"Main Aur Tu", artist:"Jasmine Sandlas, Reble", part:"Part 2", youtubeId:"c-W7L6AbmJU", spotifyId:"5icrEfubHCXlHEue9YUT3q", len:"3:30" },
+  { title:"Tamma Tamma", artist:"Bappi Lahiri,Anuradha Paudwal,Indeevar", part:"Part 2", youtubeId:"XJmzfJGx3N8", spotifyId:"1jThn5H0nfn192VCIrijZK", len:"3:58" },
+  { title:"Rang De Lal (Oye Oye)", artist:"Jasmine Sandlas, Afsana Khan, Amit Kumar, Reble", part:"Part 2", youtubeId:"cVUBCmBr-4U", spotifyId:"12YztU3FVYQAio98iwGkVr", len:"3:20" },
+  { title:"Wild Ride", artist:"Ellisar, Shashwat Sachdev", part:"Part 2", youtubeId:"ouRYWCw3-T0", spotifyId:"335fJmufeLViovmc7MjCdb", len:"2:52" },
+  { title:"Phir Se", artist:"Shashwat Sachdev, Arijit Singh", part:"Part 2", youtubeId:"EItGxlIh8vI", spotifyId:"2NhPxmtxBFZQ8Nr583Iqqt", len:"5:54" },
+  { title:"Destiny – Mann Atkeya", artist:"Shashwat Sachdev, Token, Vaibhav G, Shahzad Ali", part:"Part 2", youtubeId:"SNHbbYbhgbI", spotifyId:"79WcL9b7spam7V0nBJNa6O", len:"3:46" }
   
 ];
 
@@ -752,7 +752,21 @@ let lastSpotifyPos = 0;
 let lastSpotifyDuration = 0;
 let spotifyAutoAdvanceTimer = null;
 
-function trackSource(t){ return t.spotifyId ? 'spotify' : 'youtube'; }
+/* Device-aware source selection:
+   - On mobile devices, always prefer YouTube (Spotify's free embed
+     falls back to a 30s preview on mobile due to third-party cookie
+     restrictions, so it's unreliable there).
+   - On desktop, keep the original Spotify-preferred behavior. */
+function isMobileDevice(){
+  return /Android|iPhone|iPad|iPod|Mobile|webOS/i.test(navigator.userAgent);
+}
+
+function trackSource(t){
+  if(isMobileDevice()){
+    return t.youtubeId ? 'youtube' : 'spotify';
+  }
+  return t.spotifyId ? 'spotify' : 'youtube';
+}
 
 const els = {
   title: document.getElementById('np-title'),

@@ -81,13 +81,47 @@
     z-index: 50;
     pointer-events: none;
   }
-  .brand-mini{
+  .brand-live{
+    pointer-events: auto;
+    display: flex; align-items: center; gap: 10px;
     font-family: 'Teko', sans-serif;
-    letter-spacing: 0.3em;
-    font-size: 16px;
+    letter-spacing: 0.1em;
     color: var(--sand);
     text-transform: uppercase;
-    pointer-events: auto;
+  }
+  .brand-live .live-time{
+    font-size: 17px;
+    color: var(--paper);
+    letter-spacing: 0.05em;
+  }
+  .brand-live .live-sep{
+    width: 1px; height: 14px;
+    background: rgba(203,181,131,0.3);
+  }
+  .brand-live .live-status{
+    display: flex; align-items: center; gap: 7px;
+    font-size: 15px;
+  }
+  .brand-live .live-dot{
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #3ecf6b;
+    box-shadow: 0 0 8px rgba(62,207,107,0.9);
+    animation: dotPulse 1.8s ease-in-out infinite;
+    flex: 0 0 auto;
+  }
+  @keyframes dotPulse{
+    0%, 100%{ opacity: 1; transform: scale(1); }
+    50%{ opacity: 0.55; transform: scale(0.85); }
+  }
+  .brand-live .live-count{
+    color: var(--paper);
+    font-weight: 600;
+  }
+  .brand-live .live-label{
+    color: var(--sand-dim);
+    font-size: 13px;
+    letter-spacing: 0.08em;
   }
   .menu-btn{
     pointer-events: auto;
@@ -402,7 +436,7 @@
   .track-list{
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 80px;
+    padding-bottom: 12px;
     scrollbar-width: thin;
     scrollbar-color: var(--rust) transparent;
   }
@@ -457,11 +491,35 @@
     font-family: 'Teko', sans-serif; font-size: 14px; color: var(--sand-dim); flex: 0 0 auto;
   }
 
+  /* ============ DRAWER COPYRIGHT / DISCLAIMER FOOTER ============ */
+  .drawer-footer{
+    flex: 0 0 auto;
+    padding: 16px 24px calc(16px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(203,181,131,0.14);
+    background: rgba(10, 8, 6, 0.7);
+  }
+  .drawer-footer p{
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: var(--paper-dim);
+    margin-bottom: 8px;
+  }
+  .drawer-footer p:last-child{ margin-bottom: 0; }
+  .drawer-footer .yt-link{
+    color: var(--rust-glow);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+  .drawer-footer .yt-link:hover{ color: var(--sand); }
+
   #yt-host, #spotify-host{ position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none; bottom: 0; right: 0; overflow: hidden; }
 
   @media (max-width: 768px){
     .top-nav{ height: 60px; padding: 0 16px; padding-top: env(safe-area-inset-top); }
-    .brand-mini{ font-size: 12px; letter-spacing: 0.2em; }
+    .brand-live .live-time{ font-size: 14px; }
+    .brand-live .live-status{ font-size: 13px; }
+    .brand-live .live-label{ font-size: 11px; }
     .menu-btn{ padding: 8px 14px; font-size: 13px; }
 
     .center-stage{ padding: 0 6vw 190px; }
@@ -487,7 +545,7 @@
   }
 
   @media (max-width: 420px){
-    .brand-mini{ display: none; }
+    .brand-live .live-label{ display: none; }
     .center-stage{ padding: 0 5vw 180px; }
     .hero-eyebrow{ letter-spacing: 0.25em; font-size: 12px; }
     .hero-eyebrow::before, .hero-eyebrow::after{ margin: 0 6px; }
@@ -519,7 +577,15 @@
 
 <!-- Top Navigation -->
 <nav class="top-nav">
-  <div class="brand-mini">The Complete Soundtrack</div>
+  <div class="brand-live" id="brandLive">
+    <span class="live-time" id="liveTime">--:--</span>
+    <span class="live-sep"></span>
+    <span class="live-status">
+      <span class="live-dot"></span>
+      <span class="live-count" id="liveCount">0</span>
+      <span class="live-label">listening</span>
+    </span>
+  </div>
   <button class="menu-btn" id="openDrawerBtn" aria-label="Open tracklist menu">
     <div class="menu-icon">
       <span></span>
@@ -597,10 +663,18 @@
     <button class="close-btn" id="closeDrawerBtn" aria-label="Close tracklist">&times;</button>
   </div>
   <div class="track-list" id="track-list"></div>
+  <div class="drawer-footer">
+    <p>This is a fan-made website created for Dhurandhar &amp; Dhurandhar: The Revenge fans, for personal, non-commercial appreciation only. All songs, music and video content remain the property of their respective owners (T-Series, Saregama, Jio Studios, B62 Studios and the original artists). No copyright infringement is intended.</p>
+    <p>Listen to the songs officially here: <a class="yt-link" href="https://www.youtube.com/playlist?list=PL9bw4S5ePsEHxyr-JGfhpIgs238GhI1sA" target="_blank" rel="noopener noreferrer">Official Dhurandhar Playlist on YouTube</a></p>
+  </div>
 </aside>
 
 <div id="yt-host"></div>
 <div id="spotify-host"></div>
+
+<!-- Firebase (only used for the real-time listener count — see setup steps) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 
 <script>
 /* ============ 1. BACKGROUND WALLPAPERS (15s rotation) ============ */
@@ -654,6 +728,65 @@ function setupBackgrounds(){
   }, 5000);
 }
 setupBackgrounds();
+
+/* ============ 1b. LIVE CLOCK (top-left) ============ */
+const liveTimeEl = document.getElementById('liveTime');
+const liveCountEl = document.getElementById('liveCount');
+
+function updateLiveClock(){
+  const now = new Date();
+  let h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  if(h === 0) h = 12;
+  liveTimeEl.textContent = `${h}:${m} ${ampm}`;
+}
+updateLiveClock();
+setInterval(updateLiveClock, 10000);
+
+/* ============ 1c. REAL LIVE LISTENER COUNT (Firebase Realtime DB presence) ============
+   Fill in YOUR Firebase project's config below (see setup steps you were given).
+   Until you do, this block safely falls back to a single "1" so the UI doesn't break. */
+const firebaseConfig = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:         "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:        "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:          "YOUR_PROJECT_ID"
+};
+
+const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+if(FIREBASE_CONFIGURED && window.firebase){
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Each browser tab gets its own presence entry under /presence/<pushId>.
+  const myPresenceRef = db.ref('presence').push();
+  const connectedRef = db.ref('.info/connected');
+  const presenceRootRef = db.ref('presence');
+
+  connectedRef.on('value', (snap) => {
+    if(snap.val() === true){
+      // If this tab disconnects (closed, lost network, etc.), Firebase
+      // removes its entry automatically — no server code needed.
+      myPresenceRef.onDisconnect().remove();
+      myPresenceRef.set({ t: Date.now() });
+    }
+  });
+
+  // Live count = however many presence entries currently exist.
+  presenceRootRef.on('value', (snap) => {
+    const count = snap.numChildren();
+    liveCountEl.textContent = Math.max(count, 1);
+  });
+} else {
+  // Fallback while Firebase isn't configured yet.
+  liveCountEl.textContent = "1";
+  if(!FIREBASE_CONFIGURED){
+    console.warn("Live listener count: add your Firebase config in the script to enable real counting.");
+  }
+}
 
 /* ============ 2. UNIFIED PLAYLIST (Parts 1 & 2) ============ */
 const tracks = [
